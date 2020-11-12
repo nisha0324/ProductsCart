@@ -92,7 +92,7 @@ public class ProductEditorDialog {
         String name = b.name.getText().toString().trim();
         if (name.isEmpty())
             return false;
-        product.name = name;
+
 
         switch (b.productType.getCheckedRadioButtonId()){
             case R.id.weight_based_rbtn :
@@ -104,6 +104,8 @@ public class ProductEditorDialog {
                 //check Inputs
                 if (pricePerKg.isEmpty() || minQty.isEmpty() || !minQty.matches("\\d+(kg|g)"))
                     return false;
+
+                product.name = name;
 
                 //set values of products
                 product = new Product(name,Integer.parseInt(pricePerKg),extractMinQtyFromString(minQty));
