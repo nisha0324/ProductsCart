@@ -9,7 +9,7 @@ public class Product {
 
     //common
     public String name;
-    public byte type;
+    public int type;
 
     //WeightBased
     public int pricePerKg;

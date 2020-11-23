@@ -15,6 +15,7 @@ public class WeightPicker {
                 LayoutInflater.from(context)
         );
 
+
         new AlertDialog.Builder(context)
                 .setTitle("Pick Weight")
                 .setView(b.getRoot())

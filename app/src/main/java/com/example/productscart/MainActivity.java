@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 
 import android.app.AlertDialog;
+import android.app.Presentation;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -25,6 +26,9 @@ import android.widget.Toast;
 
 import com.example.productscart.databinding.ActivityMainBinding;
 import com.example.productscart.model.Product;
+import com.example.productscart.model.Variant;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -34,7 +38,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -43,7 +49,9 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<Product> products;
     private SearchView searchView;
     private ItemTouchHelper itemTouchHelper;
-    public boolean isDragModeOn; //TODO don't know if the dragmode is on or off
+    public boolean isDragModeOn;
+
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
 
 
 
@@ -52,9 +60,33 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        loadPreviousData();
-        setUpProductList();
+
+        // FireBase
+        setUpData();
+
+
+      //  loadPreviousData();
+       // setUpProductList();
     }
+
+
+    //To set data for firebase
+    private void setUpData() {
+        List<Product> product = new ArrayList<>(Arrays.asList( new Product("Apple",100,1)
+                                                       , new Product("Banana",50, 0.5f)));
+        Map<String, Product> map = new HashMap<>();
+        map.put("a",product.get(0));
+        map.put("b",product.get(1));
+
+
+         db.collection("Products").document("fruits and vegetables").set(map);
+
+         //To update data
+        //db.collection("Products").document("fruits and vegetables").update("a.pricePerKg","200");
+
+    }
+
+
 
     //Save Data and Load previous Data
     private void saveData(){
@@ -65,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
     private void loadPreviousData(){
         SharedPreferences preferences = getSharedPreferences("products_data",MODE_PRIVATE);
         String jsonData = preferences.getString("data", null);
+        
         if (jsonData != null){
             products = new Gson().fromJson(jsonData, new TypeToken<List<Product>>() {
             }.getType());
@@ -75,19 +108,14 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         saveData();
+        super.onDestroy();
+
     }
 
 
     private void setUpProductList() {
-        products = new ArrayList<>(Arrays.asList(
-                new Product("Apple", 100, 1)
-                , new Product("Orange", 100, 1)
-                , new Product("Grapes", 100, 1)
-                , new Product("Kiwi", 100, 1)
-                ,new Product("Apple", 100, 3)
-        ));
+        products = new ArrayList<>();
 
         adaptor = new ProductsAdaptor(MainActivity.this,products);
 
