@@ -25,8 +25,12 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.example.productscart.databinding.ActivityMainBinding;
+import com.example.productscart.model.Inventory;
 import com.example.productscart.model.Product;
 import com.example.productscart.model.Variant;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
 import com.google.gson.Gson;
@@ -46,14 +50,14 @@ public class MainActivity extends AppCompatActivity {
 
     ActivityMainBinding binding;
     ProductsAdaptor adaptor;
-    private ArrayList<Product> products;
+    private List<Product> products;
     private SearchView searchView;
     private ItemTouchHelper itemTouchHelper;
     public boolean isDragModeOn;
 
-    FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-
+    private final String MY_DATA="myData";
+    private MyApp app;
+    private SharedPreferences mSharedPref;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,70 +65,149 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // FireBase
-        setUpData();
-
-
-      //  loadPreviousData();
-       // setUpProductList();
-    }
-
-
-    //To set data for firebase
-    private void setUpData() {
-        List<Product> product = new ArrayList<>(Arrays.asList( new Product("Apple",100,1)
-                                                       , new Product("Banana",50, 0.5f)));
-        Map<String, Product> map = new HashMap<>();
-        map.put("a",product.get(0));
-        map.put("b",product.get(1));
-
-
-         db.collection("Products").document("fruits and vegetables").set(map);
-
-         //To update data
-        //db.collection("Products").document("fruits and vegetables").update("a.pricePerKg","200");
+        setup();
+        loadSavedData();
 
     }
 
-
-
-    //Save Data and Load previous Data
-    private void saveData(){
-        SharedPreferences preferences = getSharedPreferences("products_data", MODE_PRIVATE);
-        preferences.edit().putString("data",new Gson().toJson(products)).apply();
+    private void setup() {
+        app = (MyApp) getApplicationContext();
     }
 
-    private void loadPreviousData(){
-        SharedPreferences preferences = getSharedPreferences("products_data",MODE_PRIVATE);
-        String jsonData = preferences.getString("data", null);
-        
-        if (jsonData != null){
-            products = new Gson().fromJson(jsonData, new TypeToken<List<Product>>() {
-            }.getType());
-        }else {
-            products = new ArrayList<>();
+
+    private void loadSavedData() {
+        // Try to use sharedPreferences
+        Gson gson = new Gson();
+        mSharedPref = getSharedPreferences("product_data",MODE_PRIVATE);
+        String json =  mSharedPref.getString(MY_DATA,null);
+
+        if(json!=null){
+            products = gson.fromJson(json,new TypeToken<List<Product>>(){}.getType());
+            setupProductsList();
+        }
+        else{
+            fetchDataFromCloud();
         }
     }
+
+    private void fetchDataFromCloud() {
+        if (app.isOffline()){
+            app.showToast(this,"You are offline. Please check your connection");
+            return;
+        }
+
+        app.showLoadingDialog(this);
+
+        app.db.collection("Inventory").document("Products")
+                .get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists()){
+                            Inventory inventory = documentSnapshot.toObject(Inventory.class);
+                            products = inventory.products;
+                            saveDataLocally();
+                        }
+                        else{
+                            products = new ArrayList<>();
+                        }
+                        setupProductsList();
+                        app.hideLoadingDialog();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        app.showToast(MainActivity.this,"Failed to get Data");
+                        app.hideLoadingDialog();
+                    }
+                });
+    }
+
+
+    @Override
+    public void onBackPressed() {
+        new AlertDialog.Builder(this)
+                .setTitle("Do you want to save data?")
+                .setPositiveButton("SAVE", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        saveData();
+                    }
+                }).setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                finish();
+            }
+        }).show();
+    }
+
+    /*@Override
+        protected void onPause() {
+            super.onPause();
+        }*/
+    private void saveDataLocally() {
+        mSharedPref = getSharedPreferences("product_data",MODE_PRIVATE);
+        Gson gson = new Gson();
+        mSharedPref.edit()
+                .putString(MY_DATA,gson.toJson(adaptor.visibleProducts)) //TODO
+                .apply();
+    }
+
+    private void saveData(){
+        if (app.isOffline()){
+            app.showToast(this,"Can't save. You are offline!!");
+            return;
+        }
+
+        app.showLoadingDialog(this);
+        Inventory inventory = new Inventory(products);
+
+        app.db.collection("Inventory").document("Products")
+                .set(inventory)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        saveDataLocally();
+                        app.hideLoadingDialog();
+                        finish();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        app.showToast(MainActivity.this,"Failed to save data on Cloud");
+                        app.hideLoadingDialog();
+                    }
+                });
+
+    }
+
+    private void setupProductsList() {
+        // Create DataSet
+
+
+
+        // Create adapter object
+        adaptor = new ProductsAdaptor(this,products);
+
+        // Set the adapter & LayoutManager to recyclerView
+        binding.productList.setAdapter(adaptor);
+        binding.productList.setLayoutManager(new LinearLayoutManager(MainActivity.this));
+        binding.productList.addItemDecoration(
+                new DividerItemDecoration(MainActivity.this, DividerItemDecoration.VERTICAL)
+        );
+
+        // Drag And Drop
+        setUpDragDrop();
+    }
+
 
     @Override
     protected void onDestroy() {
         saveData();
         super.onDestroy();
 
-    }
-
-
-    private void setUpProductList() {
-        products = new ArrayList<>();
-
-        adaptor = new ProductsAdaptor(MainActivity.this,products);
-
-        binding.productList.setAdapter(adaptor);
-        binding.productList.setLayoutManager(new LinearLayoutManager(MainActivity.this));
-        binding.productList.addItemDecoration(
-                new DividerItemDecoration(MainActivity.this, DividerItemDecoration.VERTICAL)
-        );
-        setUpDragDrop();
     }
 
 
@@ -244,6 +327,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onContextItemSelected(item);
     }
 
+
     private void removeLastSelectedItem() {
         new AlertDialog.Builder(this)
                 .setTitle("Do you really want to remove this product?")
@@ -263,6 +347,8 @@ public class MainActivity extends AppCompatActivity {
                 .setNegativeButton("CANCEL", null)
                 .show();
     }
+
+
 
     private void editLastSelectedItem() {
 
@@ -309,6 +395,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+
 
     private boolean isNameInQuery(String name) {
         String query = searchView.getQuery().toString().toLowerCase();
