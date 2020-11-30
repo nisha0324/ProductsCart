@@ -2,12 +2,15 @@ package com.example.productscart.model;
 
 public class Variant {
 
-    String name;
-    int price;
+   public String name;
+    public int price;
 
     public Variant(String name, int price) {
         this.name = name;
         this.price = price;
+    }
+
+    public Variant() {
     }
 
     @Override

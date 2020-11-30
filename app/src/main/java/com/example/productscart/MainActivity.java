@@ -177,7 +177,7 @@ public class  MainActivity extends AppCompatActivity {
 
     private void setupProductsList() {
         //Create DataSet
-         products = new ArrayList<>(Arrays.asList(new Product("Apple",200,1.5f)));
+
         //Create adapter object
         adaptor = new ProductsAdaptor(this, products);
 

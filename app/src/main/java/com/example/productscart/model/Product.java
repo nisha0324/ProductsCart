@@ -29,11 +29,6 @@ public class Product {
         this.minQty = minQty;
     }
 
-    public Product(String name, int pricePerKg, float minQty) {
-        this.name = name;
-        this.pricePerKg = pricePerKg;
-        this.minQty = minQty;
-    }
 
     public void initVariantsBasedProduct(String name) {
         type = VARIANTS_BASED;
