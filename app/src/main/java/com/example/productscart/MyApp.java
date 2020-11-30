@@ -6,13 +6,13 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
+import android.app.AlertDialog;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class MyApp extends Application {
 
-    public FirebaseFirestore db;
+
     private ConnectivityManager connectivityManager;
     private AlertDialog dialog;
 
@@ -21,13 +21,10 @@ public class MyApp extends Application {
     public void onCreate() {
         super.onCreate();
 
-        setup();
-    }
 
-    private void setup() {
-        db = FirebaseFirestore.getInstance();
         connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
     }
+
 
     /** Loading Dialog **/
     public void showLoadingDialog(Context context){

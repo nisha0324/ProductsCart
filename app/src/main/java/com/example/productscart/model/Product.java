@@ -22,13 +22,33 @@ public class Product {
     }
 
     //Weight Based constructor
+    public void initWeightBasedProduct(String name, int pricePerKg, float minQty) {
+        type = WEIGHT_BASED;
+        this.name = name;
+        this.pricePerKg = pricePerKg;
+        this.minQty = minQty;
+    }
+
     public Product(String name, int pricePerKg, float minQty) {
         this.name = name;
         this.pricePerKg = pricePerKg;
         this.minQty = minQty;
     }
 
+    public void initVariantsBasedProduct(String name) {
+        type = VARIANTS_BASED;
+        this.name = name;
+    }
 
+    public String minQtyToString(){
+
+        if(minQty < 1){
+            int g = (int) (minQty * 1000);
+            return g + "g";
+        }
+
+        return ((int) minQty) + "kg";
+    }
    // variant based constructor
     public Product(String name) {
         type = VARIANTS_BASED;
