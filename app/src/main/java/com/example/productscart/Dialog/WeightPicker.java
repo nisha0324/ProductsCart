@@ -1,4 +1,4 @@
- package com.example.productscart;
+ package com.example.productscart.Dialog;
 
 import android.app.AlertDialog;
 import android.content.Context;

@@ -32,6 +32,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.common.reflect.TypeToken;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.gson.Gson;
 
 
@@ -63,6 +64,9 @@ public class  MainActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
 
         app = (MyApp)getApplicationContext();
+
+        FirebaseMessaging.getInstance()
+                .subscribeToTopic("admin");
         loadPreviousData();
     }
 
