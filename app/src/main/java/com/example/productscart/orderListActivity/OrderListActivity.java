@@ -6,10 +6,12 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.example.productscart.MyApp;
 import com.example.productscart.databinding.ActivityOrderListBinding;
+import com.example.productscart.model.CartItem;
 import com.example.productscart.model.Order;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -66,19 +68,14 @@ public class OrderListActivity extends AppCompatActivity {
                         public void onComplete(@NonNull Task<QuerySnapshot> task) {
 
                             for (QueryDocumentSnapshot snapshot : task.getResult()){
+//                                Log.e("TAG", snapshot.get("cartItems").toString());
                                 Order order = snapshot.toObject(Order.class);
+                                order.orderedItems = (List<CartItem>) snapshot.get("cartItems");
                                 orderList.add(order);
                                 app.hideLoadingDialog();
                             }
 
                             setUpProductsList();
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            orderList = new ArrayList<>();
-                            Toast.makeText(OrderListActivity.this, "Something went wrong", Toast.LENGTH_SHORT).show();
                         }
                     });
 

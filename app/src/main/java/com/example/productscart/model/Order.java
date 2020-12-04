@@ -2,6 +2,7 @@ package com.example.productscart.model;
 
 import com.google.firebase.Timestamp;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -12,6 +13,11 @@ import java.util.List;
         public Timestamp orderPlacedTs ;
 
         public String userName, userPhoneNo, UserAddress;
+        public List<CartItem> orderedItems;
+        public   int subTotal;
+
+        public Order() {
+        }
 
         public void inItOrder(String userName, String userPhoneNo, String userAddress) {
             this.userName = userName;
@@ -22,11 +28,10 @@ import java.util.List;
 
         }
 
-        public List<CartItem> orderList;
-        public   int subTotal;
 
-        public Order() {
-        }
+
+
+
 
         public static class orderStatus{
 
