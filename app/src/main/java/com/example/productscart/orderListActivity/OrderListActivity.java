@@ -70,7 +70,7 @@ public class OrderListActivity extends AppCompatActivity {
                             for (QueryDocumentSnapshot snapshot : task.getResult()){
 //                                Log.e("TAG", snapshot.get("cartItems").toString());
                                 Order order = snapshot.toObject(Order.class);
-                                order.orderedItems = (List<CartItem>) snapshot.get("cartItems");
+                             //   order.cartItems = (List<CartItem>) snapshot.get("cartItems");
                                 orderList.add(order);
                                 app.hideLoadingDialog();
                             }

@@ -51,7 +51,7 @@ public class OrderAdaptor extends RecyclerView.Adapter< OrderAdaptor.OrderViewHo
              b.totalAmount.setText(" Total Amount : Rs " +order.subTotal);
              b.orderId.setText(""+order.orderId);
 
-//        setupItems(order, b);
+          setupItems(order, b);
 
         b.accept.setOnClickListener(new View.OnClickListener() {
                  @Override
@@ -70,19 +70,17 @@ public class OrderAdaptor extends RecyclerView.Adapter< OrderAdaptor.OrderViewHo
     }
 
     private void setupItems(Order order, UserOrderDetailssBinding b) {
-//        b.list.removeAllViews();
-        for (  int i = 0; i < order.orderedItems.size(); i++ ){
+                b.list.removeAllViews();
+        for (  int i = 0; i < order.cartItems.size(); i++ ){
 
 //                order.orderedItems.get(i).name
 
-                Log.e("TAG", order.orderedItems.get(i).name);
+                OrderListBinding binding = OrderListBinding.inflate(LayoutInflater.from(context));
+                 binding.productName.setText("" + order.cartItems.get(i).name);
+                 binding.quaantity.setText(""+(int) order.cartItems.get(i).qty);
+                 binding.Price.setText("RS: "+order.cartItems.get(i).price);
 
-//            OrderListBinding binding = OrderListBinding.inflate(LayoutInflater.from(context));
-//            binding.productName.setText("" + order.orderedItems.get(i).name);
-////                 binding.quaantity.setText(""+(int) order.orderedItems.get(i).qty);
-////                 binding.Price.setText("RS: "+order.orderedItems.get(i).price);
-//
-//            b.list.addView(binding.getRoot());
+            b.list.addView(binding.getRoot());
 
         }
     }
